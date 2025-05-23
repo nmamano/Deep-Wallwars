@@ -1,0 +1,131 @@
+# WSL Development Environment Setup Steps for Deep-Wallwars Project
+
+## Initial Setup & Environment Check
+1. **Verified WSL2 Installation**: 
+   - Ubuntu 24.04.2 LTS already installed and running
+   - Project directory accessible at `/mnt/c/Users/Nilo/repos/Deep-Wallwars`
+
+2. **Resolved Git Configuration Issues**:
+   - Identified line ending differences between Windows and WSL git configs
+   - Windows: `core.autocrlf = true`
+   - WSL: `core.autocrlf = (not set)`
+   - **Fixed**: Set `git config core.autocrlf true` in WSL
+   - **Result**: Both environments now show identical git status
+
+## Development Tools Installation
+3. **Updated Package Lists**:
+   ```bash
+   sudo apt update
+   ```
+
+4. **Installed Essential Development Tools**:
+   ```bash
+   sudo apt install -y build-essential cmake python3-pip
+   ```
+   - Installed: gcc, g++, make, cmake, python3-pip
+   - Verified with: `which gcc g++ cmake python3 pip3`
+
+## CUDA Setup for GPU Support
+5. **Verified GPU Access**: 
+   - `nvidia-smi` works in WSL2 (RTX 4090 visible)
+   - Windows driver 572.61 supports WSL2 passthrough
+   - CUDA Version 12.8 supported
+
+6. **Installed CUDA Toolkit 12.8**:
+   ```bash
+   wget https://developer.download.nvidia.com/compute/cuda/repos/wsl-ubuntu/x86_64/cuda-keyring_1.1-1_all.deb
+   sudo dpkg -i cuda-keyring_1.1-1_all.deb
+   sudo apt update
+   sudo apt install -y cuda-toolkit-12-8
+   ```
+
+7. **Configured CUDA Environment**:
+   ```bash
+   echo 'export PATH=/usr/local/cuda-12.8/bin:$PATH' >> ~/.bashrc
+   echo 'export LD_LIBRARY_PATH=/usr/local/cuda-12.8/lib64:$LD_LIBRARY_PATH' >> ~/.bashrc
+   source ~/.bashrc
+   ```
+   - **Verified**: `nvcc --version` shows CUDA 12.8.93
+
+## C++ Dependencies
+8. **Installed Google Libraries**:
+   ```bash
+   sudo apt install -y libgflags-dev libgoogle-glog-dev
+   ```
+
+9. **Installed Folly**:
+   ```bash
+   cd /tmp
+   git clone https://github.com/facebook/folly.git
+   cd folly
+   sudo ./build/fbcode_builder/getdeps.py install-system-deps --recursive
+   python3 ./build/fbcode_builder/getdeps.py --allow-system-packages build --no-tests
+   ```
+   - **Installed at**: `/tmp/fbcode_builder_getdeps-ZtmpZfollyZbuildZfbcode_builder/installed/folly`
+   - **Verified**: `libfolly.a` and CMake config files present
+
+10. **Installed TensorRT**:
+    ```bash
+    wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.0-1_all.deb
+    sudo dpkg -i cuda-keyring_1.0-1_all.deb
+    sudo apt update
+    sudo apt install tensorrt-dev
+    ```
+
+## Current Status
+- ✅ WSL2 Ubuntu 24.04.2 LTS ready
+- ✅ Git configuration synchronized between Windows/WSL
+- ✅ Basic development tools installed (gcc, g++, cmake, pip3)
+- ✅ CUDA 12.8 toolkit installed and configured
+- ✅ gflags and glog installed
+- ✅ Folly installed and built successfully
+- ✅ TensorRT development libraries installed
+- ✅ **PROJECT BUILD SUCCESSFUL!** 🎉
+- ✅ **ALL UNIT TESTS PASSING!** 🎉
+
+## Project Build
+11. **Built Deep-Wallwars Project**:
+    ```bash
+    cd /mnt/c/Users/Nilo/repos/Deep-Wallwars
+    mkdir -p build && cd build
+    cmake -DCMAKE_PREFIX_PATH="/tmp/fbcode_builder_getdeps-ZtmpZfollyZbuildZfbcode_builder/installed/folly;/tmp/fbcode_builder_getdeps-ZtmpZfollyZbuildZfbcode_builder/installed/fmt-b9Q95LReoqZIlBYUjHM9k1lYj_pZiltXhIKjmhdI7ds;/tmp/fbcode_builder_getdeps-ZtmpZfollyZbuildZfbcode_builder/installed/glog-3NR4W-ewyI8ySjdIxOcVuzWDoDcud_1TJGAfGDVcsyM" ..
+    ```
+    **Note**: Fixed compatibility issue in `src/cached_policy.cpp` line 52:
+    - Changed: `folly::in_place_t()` → `std::in_place`
+    ```bash
+    make -j$(nproc)
+    ```
+    - **Result**: Successfully built `deep_ww` executable
+
+12. **Installed and Ran Unit Tests**:
+    ```bash
+    sudo apt install catch2
+    cmake -DCMAKE_PREFIX_PATH="..." ..  # Same as above
+    make -j$(nproc)
+    ./unit_tests
+    ```
+    - **Result**: All tests passed (63 assertions in 16 test cases) ✅
+
+## Environment Summary
+**C++ Self-Play Environment: COMPLETE** 🎉
+- CUDA 12.8 + TensorRT 10.x for GPU inference
+- Folly for coroutines, logging, and thread pools  
+- Multi-threaded MCTS implementation
+- Interactive play and training data generation
+- Model ranking system
+
+## Next Steps
+- ✅ **C++ Environment Complete!**
+- Install Python dependencies for training scripts (PyTorch, fastai)
+- Set up training pipeline
+- Generate initial models for self-play
+
+Instructions:
+
+To enter the Ubuntu WSL2 environment, run:
+wsl -d Ubuntu
+
+Make with this command:
+cmake -DCMAKE_PREFIX_PATH="/tmp/fbcode_builder_getdeps-ZtmpZfollyZbuildZfbcode_builder/installed/folly;/tmp/fbcode_builder_getdeps-ZtmpZfollyZbuildZfbcode_builder/installed/fmt-b9Q95LReoqZIlBYUjHM9k1lYj_pZiltXhIKjmhdI7ds;/tmp/fbcode_builder_getdeps-ZtmpZfollyZbuildZfbcode_builder/installed/glog-3NR4W-ewyI8ySjdIxOcVuzWDoDcud_1TJGAfGDVcsyM" ..
+
+

@@ -1,0 +1,8 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+When I ask for help doing something, like installing a package, don't give me all the steps upfront.
+I want only one step at a time, up to a point that should generate some output. Then, wait for me to give you the output, so you can validate that everything is going correctly, before moving on to the next step.
+Keep in mind that, at each step, I may have questions, and having instructions buried in previous chat messages is not helpful.

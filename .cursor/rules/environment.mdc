@@ -1,0 +1,30 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Here is my setup:
+
+OS Name: Microsoft Windows 11 Home
+OS Version: 24H2 Build 26100
+64-bit operating system, x64-based processor
+Intel(R) UHD Graphics 770 with driver version 32.0.101.6129
+NVIDIA GeForce RTX 4090 with driver version 572.61
+13th Gen Intel(R) Core(TM) i9-13900K (3000 MHz max clock speed, 24 cores, 32 logical processors)
+32GB DRAM
+
+The project runs over WSL.
+- Ubuntu WSL2 environment is already set up and running Ubuntu 24.04.2 LTS
+
+Software:
+- CUDA Toolkit 12.8.1 (Windows, x86_64) (installed in C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.8)
+- Default Python installation: Python 3.12.6
+- vcpkg is at C:/dev/vcpkg
+- TensorRT is at C:/dev/TensorRT-10.11.0.33
+- I installed Visual Studio Community 2022 with Desktop development with C++
+
+I use:
+- Cursor
+- git bash terminal by default.
+
+
