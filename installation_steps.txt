@@ -54,14 +54,19 @@
    ```
 
 9. **Installed Folly**:
-   ```bash
-   cd /tmp
-   git clone https://github.com/facebook/folly.git
-   cd folly
-   sudo ./build/fbcode_builder/getdeps.py install-system-deps --recursive
-   python3 ./build/fbcode_builder/getdeps.py --allow-system-packages build --no-tests
-   ```
-   - **Installed at**: `/tmp/fbcode_builder_getdeps-ZtmpZfollyZbuildZfbcode_builder/installed/folly`
+     ```bash
+     mkdir -p ~/deepwallwars_folly_deps/folly_src
+     cd ~/deepwallwars_folly_deps/folly_src
+     git clone https://github.com/facebook/folly.git
+     cd folly
+     # Install system dependencies for folly (if not already done)
+     # sudo ./build/fbcode_builder/getdeps.py install-system-deps --recursive
+     # Build and install folly and its dependencies to a persistent location
+     FOLLY_INSTALL_PATH=~/deepwallwars_folly_deps/folly_build_scratch
+     python3 ./build/fbcode_builder/getdeps.py --scratch-path "$FOLLY_INSTALL_PATH" --allow-system-packages build --no-tests folly
+     ```
+   - **Installed at**: `~/deepwallwars_folly_deps/folly_build_scratch/installed/folly`
+     - (and dependencies like fmt, glog in subdirectories of `~/deepwallwars_folly_deps/folly_build_scratch/installed/`)
    - **Verified**: `libfolly.a` and CMake config files present
 
 10. **Installed TensorRT**:
@@ -88,7 +93,7 @@
     ```bash
     cd /mnt/c/Users/Nilo/repos/Deep-Wallwars
     mkdir -p build && cd build
-    cmake -DCMAKE_PREFIX_PATH="/tmp/fbcode_builder_getdeps-ZtmpZfollyZbuildZfbcode_builder/installed/folly;/tmp/fbcode_builder_getdeps-ZtmpZfollyZbuildZfbcode_builder/installed/fmt-b9Q95LReoqZIlBYUjHM9k1lYj_pZiltXhIKjmhdI7ds;/tmp/fbcode_builder_getdeps-ZtmpZfollyZbuildZfbcode_builder/installed/glog-3NR4W-ewyI8ySjdIxOcVuzWDoDcud_1TJGAfGDVcsyM" ..
+    cmake -DCMAKE_PREFIX_PATH="~/deepwallwars_folly_deps/folly_build_scratch/installed/folly;~/deepwallwars_folly_deps/folly_build_scratch/installed/fmt-ChsBN0c2hHnpsw2DxW2xN41t8N72XBRNf6P5tBwGPyA;~/deepwallwars_folly_deps/folly_build_scratch/installed/glog-Kx5Zk7U5w6J8_u5_yY1L4Y6tX8Z9vP1Q_wJ4_kL3_nI" ..
     ```
     **Note**: Fixed compatibility issue in `src/cached_policy.cpp` line 52:
     - Changed: `folly::in_place_t()` → `std::in_place`
@@ -105,6 +110,111 @@
     ./unit_tests
     ```
     - **Result**: All tests passed (63 assertions in 16 test cases) ✅
+
+## Python Training Environment Setup
+13. **Verified Python and Pip Versions**:
+    - In WSL, without an active virtual environment:
+      ```bash
+      python3 --version && pip3 --version
+      ```
+    - Result: Python 3.12.3, pip 24.0
+
+14. **Installed `python3-venv` Package**:
+    - Needed for creating Python virtual environments.
+    - Attempt to create venv failed initially due to missing `ensurepip`.
+      ```bash
+      sudo apt install python3-venv
+      ```
+
+15. **Created Python Virtual Environment**:
+    - Navigated to project root: `cd /mnt/c/Users/Nilo/repos/Deep-Wallwars`
+    - Created venv:
+      ```bash
+      python3 -m venv .venv
+      ```
+
+16. **Activated Virtual Environment**:
+    ```bash
+    source .venv/bin/activate
+    ```
+    - Prompt changed to indicate `(.venv)`
+
+17. **Upgraded Pip in Virtual Environment**:
+    ```bash
+    pip install --upgrade pip
+    ```
+    - Result: Successfully installed pip-25.1.1
+
+18. **Installed PyTorch with CUDA 12.8 Support**:
+    - Command (in activated .venv):
+      ```bash
+      pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
+      ```
+    - Verification (in activated .venv):
+      ```python
+      python3 -c "import torch; print(f'PyTorch version: {torch.__version__}'); print(f'CUDA available: {torch.cuda.is_available()}'); print(f'CUDA version: {torch.version.cuda}'); print(f'cuDNN version: {torch.backends.cudnn.version()}'); print(f'Device count: {torch.cuda.device_count()}'); print(f'Current device: {torch.cuda.current_device()}'); print(f'Device name: {torch.cuda.get_device_name(torch.cuda.current_device())}')"
+      ```
+    - Result:
+      - PyTorch version: 2.7.0+cu128
+      - CUDA available: True
+      - CUDA version: 12.8
+      - cuDNN version: 90701 (9.7.0.1)
+      - Device count: 1
+      - Device name: NVIDIA GeForce RTX 4090
+
+19. **Installed Fastai**:
+    - Command (in activated .venv):
+      ```bash
+      pip install fastai
+      ```
+    - Verification (in activated .venv):
+      ```python
+      python3 -c "import fastai; import torch; print(f'Fastai version: {fastai.__version__}'); print(f'Fastai using CUDA: {torch.cuda.is_available()}')"
+      ```
+    - Result:
+      - Fastai version: 2.8.1
+      - Fastai using CUDA: True
+
+20. **Installed `onnx` Python Package**:
+    - **Reason**: Required by `torch.onnx.export()` for ONNX model saving. Missed in initial dependency setup.
+    - Command (in activated .venv):
+      ```bash
+      pip install onnx
+      ```
+
+21. **Installed Native TensorRT SDK (for trtexec)**:
+    - **Reason**: `tensorrt-dev` apt package did not include `trtexec`, which is called by the training script.
+    - **Downloaded**: `TensorRT-10.11.0.33.Linux.x86_64-gnu.cuda-12.9.tar.gz` from NVIDIA Developer site.
+    - **Installation Steps**:
+      ```bash
+      mkdir -p ~/downloads ~/opt
+      mv /mnt/c/Users/Nilo/Downloads/TensorRT-10.11.0.33.Linux.x86_64-gnu.cuda-12.9.tar.gz ~/downloads/
+      cd ~/downloads
+      tar -xzvf TensorRT-10.11.0.33.Linux.x86_64-gnu.cuda-12.9.tar.gz -C ~/opt/
+      # Add to .bashrc and source it
+      echo '' >> ~/.bashrc
+      echo '# Add TensorRT SDK to PATH and LD_LIBRARY_PATH' >> ~/.bashrc
+      echo 'export TENSORRT_HOME=~/opt/TensorRT-10.11.0.33' >> ~/.bashrc
+      echo 'export PATH="$TENSORRT_HOME/bin:$PATH"' >> ~/.bashrc
+      echo 'export LD_LIBRARY_PATH="$TENSORRT_HOME/lib:$LD_LIBRARY_PATH"' >> ~/.bashrc
+      source ~/.bashrc
+      ```
+    - **Verification**:
+      ```bash
+      # Ensure .venv is active BEFORE checking, or open a new terminal and activate .venv
+      # then source ~/.bashrc if PATH issues persist.
+      echo $PATH # Should include $TENSORRT_HOME/bin
+      which trtexec # Should be ~/opt/TensorRT-10.11.0.33/bin/trtexec
+      trtexec       # Should show version 10.11.0.0 build 33
+      ```
+
+22. **Created Directories for Training Script Outputs**:
+    - Navigated to `scripts/` directory.
+    - Ran:
+      ```bash
+      mkdir -p ../models
+      mkdir -p ../data
+      ```
 
 ## Environment Summary
 **C++ Self-Play Environment: COMPLETE** 🎉
@@ -125,7 +235,19 @@ Instructions:
 To enter the Ubuntu WSL2 environment, run:
 wsl -d Ubuntu
 
+To activate the Python virtual environment, run:
+source .venv/bin/activate
+
 Make with this command:
-cmake -DCMAKE_PREFIX_PATH="/tmp/fbcode_builder_getdeps-ZtmpZfollyZbuildZfbcode_builder/installed/folly;/tmp/fbcode_builder_getdeps-ZtmpZfollyZbuildZfbcode_builder/installed/fmt-b9Q95LReoqZIlBYUjHM9k1lYj_pZiltXhIKjmhdI7ds;/tmp/fbcode_builder_getdeps-ZtmpZfollyZbuildZfbcode_builder/installed/glog-3NR4W-ewyI8ySjdIxOcVuzWDoDcud_1TJGAfGDVcsyM" ..
+cmake -DCMAKE_PREFIX_PATH="~/deepwallwars_folly_deps/folly_build_scratch/installed/folly;~/deepwallwars_folly_deps/folly_build_scratch/installed/fmt-ChsBN0c2hHnpsw2DxW2xN41t8N72XBRNf6P5tBwGPyA;~/deepwallwars_folly_deps/folly_build_scratch/installed/glog-Kx5Zk7U5w6J8_u5_yY1L4Y6tX8Z9vP1Q_wJ4_kL3_nI" ..
 
 
+PyTorch version: 2.7.0+cu128
+CUDA available: True
+CUDA version: 12.8
+cuDNN version: 90701
+Device count: 1
+Current device: 0
+Device name: NVIDIA GeForce RTX 4090
+Fastai version: 2.8.1
+Fastai using CUDA: True
