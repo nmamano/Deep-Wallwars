@@ -238,9 +238,8 @@ wsl -d Ubuntu
 To activate the Python virtual environment, run:
 source .venv/bin/activate
 
-Make with this command:
-cmake -DCMAKE_PREFIX_PATH="~/deepwallwars_folly_deps/folly_build_scratch/installed/folly;~/deepwallwars_folly_deps/folly_build_scratch/installed/fmt-ChsBN0c2hHnpsw2DxW2xN41t8N72XBRNf6P5tBwGPyA;~/deepwallwars_folly_deps/folly_build_scratch/installed/glog-Kx5Zk7U5w6J8_u5_yY1L4Y6tX8Z9vP1Q_wJ4_kL3_nI" ..
-
+Create makefile with this command:
+cmake -DCMAKE_PREFIX_PATH="~/deepwallwars_folly_deps/folly_build_scratch/installed/folly;~/deepwallwars_folly_deps/folly_build_scratch/installed/fmt-ay0yhNJPNTdY1lqD870fK2TOdV0tMIrf-S0qJs5-yLw;~/deepwallwars_folly_deps/folly_build_scratch/installed/glog-Or4_YcKCBYmwhzpCKzU3rxBin97HeIDv_8yQYRg7CTk" ..
 
 PyTorch version: 2.7.0+cu128
 CUDA available: True
